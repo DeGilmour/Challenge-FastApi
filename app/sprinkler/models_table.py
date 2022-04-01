@@ -1,6 +1,7 @@
 from email.policy import default
 from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, JSON
 from app.db import db_config
+from app.plants.models_table import Plant
 
 Base = db_config.Base
 
@@ -12,29 +13,25 @@ class Sprinkler(db_config.Base):
     sprinkler_name = Column(String, unique=True, index=True)
     water_flow = Column(Integer, default=0)
     problems = Column(Boolean, default=False)
-    plants_in_sprinkler_area = Column(JSON(), ForeignKey('plants.id'), nullable=True)
 
     def to_json(self):
         return {
             "water_flow": self.water_flow,
             "sprinkler_name": self.sprinkler_name,
-            "problems": self.problems,
-            "plants_in_sprinkler_area": self.plants_in_sprinkler_area
+            "problems": self.problems
         }
 
-# class SprinklerPlants(db_config.Base):
-#     """Table stores plants a certain sprinkler area"""
-#     __tablename__ = 'sprinkler_plants'
 
-#     sprinkler = relationship('Sprinkler', foreign_keys='sprinkler.id')
-#     weapon_Concealment = Column(PickleType(), ForeignKey('plant.id'), nullable=False)
+class PlantsInSprinkler(db_config.Base):
+    __tablename__ = "plants_in_sprinkler"
 
-# def add_column(engine, table_name, column):
-#     column_name = 'plants_in_sprinkler_cover_area'
-#     column_type = column.type.compile(engine.dialect)
-#     engine.execute('ALTER TABLE %s ADD COLUMN %s %s' % (table_name, column_name, column_type))
+    id = Column(Integer, primary_key=True, index=True)
+    sprinkler = Column(Integer, ForeignKey(Sprinkler.id))
+    plant = Column(Integer, ForeignKey(Plant.id))
 
-# del Sprinkler.__mapper__._props["plants_in_sprinkler_cover_area"]
-# column = Column(PickleType(), ForeignKey('plants.id'), nullable=True)
-# add_column(db_config.engine, 'sprinkler', column)
-# Sprinkler.__table__.drop(db_config.engine)
+    def to_json(self):
+        return {
+            "id": self.id,
+            "sprinkler": self.sprinkler,
+            "plant": self.plant
+        }
